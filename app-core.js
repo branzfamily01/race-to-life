@@ -1,15 +1,16 @@
+const CAR_BASE='https://raw.githubusercontent.com/branzfamily01/race-to-study/main/assets/cars/';
 const CARS=[
-{id:1,name:'マクラーレン P1',asset:'assets/cars/mclaren-p1.webp',accent:'#ff7a1a',accent2:'#ffc878'},
-{id:2,name:'マクラーレン スピードテール',asset:'assets/cars/mclaren-speedtail.webp',accent:'#b9d6f9',accent2:'#fff'},
-{id:3,name:'ブガッティ ボリード',asset:'assets/cars/bugatti-bolide.webp',accent:'#1593ff',accent2:'#77e8ff'},
-{id:4,name:'ラ フェラーリ',asset:'assets/cars/laferrari.webp',accent:'#ff2e2e',accent2:'#ff806a'},
-{id:5,name:'ケーニグセグ アゲーラR',asset:'assets/cars/koenigsegg-agera-r.webp',accent:'#ff9d33',accent2:'#ffdc88'},
-{id:6,name:'ケーニグセグ レゲーラ',asset:'assets/cars/koenigsegg-regera.webp',accent:'#96bfff',accent2:'#eaf4ff'},
-{id:7,name:'パガーニ ウアイラ ロードスター',asset:'assets/cars/pagani-huayra-roadster.webp',accent:'#267bd7',accent2:'#91c8ff'},
-{id:8,name:'日産 GT-R',asset:'assets/cars/nissan-gtr.webp',accent:'#d3d8df',accent2:'#fff'},
-{id:9,name:'ホンダ NSX-R',asset:'assets/cars/honda-nsx-r.webp',accent:'#f5f7fa',accent2:'#fff'},
-{id:10,name:'ホンダ NSX',asset:'assets/cars/honda-nsx.webp',accent:'#ff6b26',accent2:'#ffb275'},
-{id:11,name:'ホンダ NSX タイプS',asset:'assets/cars/honda-nsx-type-s.webp',accent:'#ff3541',accent2:'#ffa8ad'}
+{id:1,name:'マクラーレン P1',asset:CAR_BASE+'mclaren-p1.svg',accent:'#ff7a1a',accent2:'#ffc878'},
+{id:2,name:'マクラーレン スピードテール',asset:CAR_BASE+'mclaren-speedtail.svg',accent:'#b9d6f9',accent2:'#fff'},
+{id:3,name:'ブガッティ ボリード',asset:CAR_BASE+'bugatti-bolide.webp',accent:'#1593ff',accent2:'#77e8ff'},
+{id:4,name:'ラ フェラーリ',asset:CAR_BASE+'laferrari.webp',accent:'#ff2e2e',accent2:'#ff806a'},
+{id:5,name:'ケーニグセグ アゲーラR',asset:CAR_BASE+'koenigsegg-agera-r.webp',accent:'#ff9d33',accent2:'#ffdc88'},
+{id:6,name:'ケーニグセグ レゲーラ',asset:CAR_BASE+'koenigsegg-regera.webp',accent:'#96bfff',accent2:'#eaf4ff'},
+{id:7,name:'パガーニ ウアイラ ロードスター',asset:CAR_BASE+'pagani-huayra-roadster.webp',accent:'#267bd7',accent2:'#91c8ff'},
+{id:8,name:'日産 GT-R',asset:CAR_BASE+'nissan-gtr.webp',accent:'#d3d8df',accent2:'#fff'},
+{id:9,name:'ホンダ NSX-R',asset:CAR_BASE+'honda-nsx-r.webp',accent:'#f5f7fa',accent2:'#fff'},
+{id:10,name:'ホンダ NSX',asset:CAR_BASE+'honda-nsx.webp',accent:'#ff6b26',accent2:'#ffb275'},
+{id:11,name:'ホンダ NSX タイプS',asset:CAR_BASE+'honda-nsx-type-s.webp',accent:'#ff3541',accent2:'#ffa8ad'}
 ];
 const SOUND_COLLECTION=[
 {id:'v6',name:'V6 SPORT',icon:'🔷',need:0,desc:'軽快で扱いやすいスポーツサウンド',base:78,wave:'triangle',harm:1.5},
@@ -39,25 +40,25 @@ const fresh=()=>({
  prepItems:[
   {id:1,name:'宿題',done:false},{id:2,name:'筆箱',done:false},{id:3,name:'水筒',done:false},{id:4,name:'ハンカチ・ティッシュ',done:false}
  ],nextPrepId:5,
- cleanBest:{},cleanHistory:[],daily:{date:dayKey(),study:false,clean:false,prep:false},
+ cleanBest:{},cleanHistory:[],daily:{date:dayKey(),study:false,clean:false,prep:false,grand:false},
  parentCode:'1234'
 });
 let state;try{state={...fresh(),...JSON.parse(localStorage.getItem(STORAGE)||'{}')}}catch{state=fresh()}
-if(!state.daily||state.daily.date!==dayKey())state.daily={date:dayKey(),study:false,clean:false,prep:false};
+if(!state.daily||state.daily.date!==dayKey())state.daily={date:dayKey(),study:false,clean:false,prep:false,grand:false};
 if(!Array.isArray(state.studyTasks))state.studyTasks=[];
 if(!Array.isArray(state.prepItems))state.prepItems=fresh().prepItems;
 let ui={screen:'home',parentUnlocked:false,toast:'',overlay:null,studyTask:null,timerMode:'study',studyMin:20,studyLeft:0,studyRun:false,breakMin:5,breakLeft:0,breakRun:false,cleanMin:5,cleanLeft:0,cleanRun:false,cleanCount:0,prepChallenge:false,prepLeft:300,prepRun:false,raceResult:null};
 let studyTimer=null,breakTimer=null,cleanTimer=null,prepTimer=null,returnTimer=null,raceAnim=null,raceAudio=null,audioCtx=null,canCanTimer=null,speechMinute=null;
-const carImages=new Map();CARS.forEach(c=>{const im=new Image();im.src=c.asset;carImages.set(c.id,im)});
-let race=createRaceState();
+const carImages=new Map();CARS.forEach(c=>{const im=new Image();im.crossOrigin='anonymous';im.src=c.asset;carImages.set(c.id,im)});
+let race=null;
 
 function save(){localStorage.setItem(STORAGE,JSON.stringify(state))}
 function car(){return CARS.find(c=>c.id===state.selectedCarId)||CARS[0]}
 function snd(){return SOUND_COLLECTION.find(s=>s.id===state.selectedSound)||SOUND_COLLECTION[0]}
 function soundUnlocked(s){return state.totalPoints>=s.need}
 function vol(){return({off:0,small:.035,medium:.075,large:.13}[state.soundVolume]??.075)}
-function esc(x=''){return String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]))}
-function $ (q){return document.querySelector(q)}
+function esc(x=''){return String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function $(q){return document.querySelector(q)}
 function award(points,mode){
  const before=state.totalPoints;
  state.points+=points;state.totalPoints+=points;
